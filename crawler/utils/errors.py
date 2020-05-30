@@ -1,0 +1,2 @@
+class FutureDateError(Exception):
+    pass
