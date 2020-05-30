@@ -3,12 +3,13 @@ from datetime import date, timedelta
 import pytest
 
 from crawler.stock import get_stock_prices, internal_get_stock_price, get_latest_date, get_oldest_date
-from crawler.utils.consts import CORPCODE_SAMSUNG_ELECTRONICS
+from crawler.utils.consts import CORPCODE_SAMSUNG_ELECTRONICS, CORPCODE_KCS
 from crawler.utils.errors import FutureDateError
 
 
 def test_get_oldest_date():
     assert get_oldest_date(CORPCODE_SAMSUNG_ELECTRONICS) == date(1996, 6, 25)
+    assert get_oldest_date(CORPCODE_KCS) == date(2010, 4, 14)
 
 
 def test_get_latest_date():

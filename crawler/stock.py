@@ -29,12 +29,12 @@ def get_stock_prices(corpcode: str) -> Dict[date, int]:
 
 def get_latest_date() -> date:
     url = "https://finance.naver.com/item/sise_day.nhn?code={}&page=1".format(CORPCODE_SAMSUNG_ELECTRONICS)
-    return datetime.strptime(pd.read_html(url)[0].dropna().날짜[1], "%Y.%m.%d").date()
+    return datetime.strptime(pd.read_html(url)[0].dropna().날짜.array[0], "%Y.%m.%d").date()
 
 
 def get_oldest_date(corpcode) -> date:
     url = "https://finance.naver.com/item/sise_day.nhn?code={}&page=9999".format(corpcode)
-    date_as_str = pd.read_html(url)[0].dropna().날짜[pd.read_html(url)[0].dropna().날짜.size]
+    date_as_str = pd.read_html(url)[0].dropna().날짜.array[-1]
     return datetime.strptime(date_as_str, "%Y.%m.%d").date()
 
 
