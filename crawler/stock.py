@@ -9,7 +9,12 @@ from crawler.utils.configs import SEARCH_DATE_LIMIT
 from crawler.utils.consts import CORPCODE_SAMSUNG_ELECTRONICS
 from crawler.utils.errors import FutureDateError
 from crawler.utils.files import mkdir_if_not_exists
-from crawler.utils.paths import get_stockprice_path
+from crawler.utils.paths import get_stockprice_path, get_oldest_path
+
+
+cache = {
+    'latest_date': None,
+}
 
 
 def get_stock_prices(corpcode: str) -> Dict[date, int]:
@@ -18,7 +23,7 @@ def get_stock_prices(corpcode: str) -> Dict[date, int]:
     ret = {}
     oldest_date = get_oldest_date(corpcode)
     oldest_date = max(oldest_date, SEARCH_DATE_LIMIT)
-    get_stock_price(corpcode, get_oldest_date(corpcode))
+    get_stock_price(corpcode, oldest_date)
 
     curr_date = get_latest_date()
     while True:
@@ -30,13 +35,24 @@ def get_stock_prices(corpcode: str) -> Dict[date, int]:
 
 
 def get_latest_date() -> date:
+    if cache['latest_date'] is not None:
+        return cache['latest_date']
+
     url = "https://finance.naver.com/item/sise_day.nhn?code={}&page=1".format(CORPCODE_SAMSUNG_ELECTRONICS)
-    return datetime.strptime(pd.read_html(url)[0].dropna().날짜.array[0], "%Y.%m.%d").date()
+    cache['latest_date'] = datetime.strptime(pd.read_html(url)[0].dropna().날짜.array[0], "%Y.%m.%d").date()
+    return cache['latest_date']
 
 
 def get_oldest_date(corpcode) -> date:
+    if os.path.exists(get_oldest_path(corpcode)):
+        date_as_str = json.load(open(get_oldest_path(corpcode), 'r'))
+        return datetime.strptime(date_as_str, "%Y.%m.%d").date()
     url = "https://finance.naver.com/item/sise_day.nhn?code={}&page=9999".format(corpcode)
     date_as_str = pd.read_html(url)[0].dropna().날짜.array[-1]
+
+    mkdir_if_not_exists(os.path.dirname(get_oldest_path(corpcode)))
+    json.dump(date_as_str, open(get_oldest_path(corpcode), 'w'))
+
     return datetime.strptime(date_as_str, "%Y.%m.%d").date()
 
 
@@ -66,6 +82,9 @@ def internal_get_stock_price(corpcode: str, target_date: date) -> Optional[int]:
     page = 1
     terminate = False
     previous_date: Optional[date] = None
+    oldest_date = get_oldest_date(corpcode)
+    if oldest_date > target_date:
+        return None
 
     while True:
         if terminate:
@@ -100,6 +119,7 @@ def get_prevday_stock_price(corpcode: str, target_date: date) -> Optional[int]:
     curr_date = target_date - timedelta(days=1)
     curr_price = None
     oldest_date = get_oldest_date(corpcode)
+    oldest_date = max(oldest_date, SEARCH_DATE_LIMIT)
     while oldest_date <= curr_date:
         curr_price = get_stock_price(corpcode, curr_date)
         if curr_price is not None:

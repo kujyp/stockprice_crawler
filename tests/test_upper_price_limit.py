@@ -49,6 +49,14 @@ def test_get_upperpricelimit_stocks3():
     assert {'name': '인포마크', 'code': '175140'} in actual
 
 
+def test_get_upperpricelimit_stocks4():
+    actual = get_upperpricelimit_stocks(date(2020, 5, 21))
+    assert {'name': '로보로보', 'code': '215100'} in actual
+    assert {'name': '비디아이', 'code': '148140'} in actual
+    assert {'name': '동국S&C', 'code': '100130'} in actual
+    assert {'name': '글로벌에스엠', 'code': '900070'} in actual
+
+
 def test_get_rounded_down():
     assert get_rounded_down(475, 50) == 450
     assert get_rounded_down(475, 100) == 400

@@ -11,3 +11,9 @@ def get_stockprice_path(corpcode: str, target_date: date) -> str:
     assert isinstance(target_date, date)
 
     return os.path.join(get_project_root(), 'data', 'prices', corpcode, f"{target_date.strftime('%Y%m%d')}.json")
+
+
+def get_oldest_path(corpcode: str) -> str:
+    assert isinstance(corpcode, str)
+
+    return os.path.join(get_project_root(), 'data', 'oldest', f"{corpcode}.json")

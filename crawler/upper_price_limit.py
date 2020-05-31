@@ -69,6 +69,8 @@ def is_upperpricelimit(corpcode: str, target_date: date) -> bool:
 
     price = get_stock_price(corpcode, target_date)
     prevday_price = get_prevday_stock_price(corpcode, target_date)
+    if price is None or prevday_price is None:
+        return False
     return is_upper_price_limit_diffences(price, prevday_price)
 
 

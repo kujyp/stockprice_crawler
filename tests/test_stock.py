@@ -2,7 +2,7 @@ from datetime import date, timedelta
 
 import pytest
 
-from crawler.stock import get_stock_prices, internal_get_stock_price, get_latest_date, get_oldest_date
+from crawler.stock import get_stock_prices, internal_get_stock_price, get_latest_date, get_oldest_date, get_prevday_stock_price
 from crawler.utils.consts import CORPCODE_SAMSUNG_ELECTRONICS, CORPCODE_KCS, CORPCODE_Y_ENTEC, CORPCODE_KNN
 from crawler.utils.errors import FutureDateError
 
@@ -72,3 +72,7 @@ def test_internal_get_stock_price():
 def test_internal_get_stock_price_oldest():
     pytest.skip()
     assert internal_get_stock_price(CORPCODE_SAMSUNG_ELECTRONICS, date(1996, 6, 25)) == 67500
+
+
+def test_get_prevday_stock_price():
+    assert get_prevday_stock_price('223250', date(2020, 5, 22)) is None
