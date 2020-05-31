@@ -19,8 +19,8 @@ def test_get_latest_date():
 def test_get_stock_prices():
     actual = get_stock_prices(CORPCODE_SAMSUNG_ELECTRONICS)
     assert actual[date(2020, 5, 29)] == 50700
-    assert actual[date(2005, 1, 10)] == 438000
-    assert actual[date(1996, 6, 25)] == 67500
+    assert date(2005, 1, 10) not in actual
+    assert date(1996, 6, 25) not in actual
 
 
 def test_internal_get_stock_price_with_futuredate():

@@ -5,6 +5,7 @@ from typing import Dict, Optional
 
 import pandas as pd
 
+from crawler.utils.configs import SEARCH_DATE_LIMIT
 from crawler.utils.consts import CORPCODE_SAMSUNG_ELECTRONICS
 from crawler.utils.errors import FutureDateError
 from crawler.utils.files import mkdir_if_not_exists
@@ -16,6 +17,7 @@ def get_stock_prices(corpcode: str) -> Dict[date, int]:
 
     ret = {}
     oldest_date = get_oldest_date(corpcode)
+    oldest_date = max(oldest_date, SEARCH_DATE_LIMIT)
     get_stock_price(corpcode, get_oldest_date(corpcode))
 
     curr_date = get_latest_date()

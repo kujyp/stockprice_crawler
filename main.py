@@ -1,17 +1,17 @@
+from crawler.corp import get_krx_corplist
 from crawler.upper_price_limit import get_upperpricelimit_histories
-from crawler.utils.consts import CORPCODE_KCS, CORPCODE_SAMSUNG_ELECTRONICS
 
 
 def main():
-    print('KCS')
-    print(get_upperpricelimit_histories(CORPCODE_KCS))
-    print()
-    print('삼성전자')
-    print(get_upperpricelimit_histories(CORPCODE_SAMSUNG_ELECTRONICS))
-    print()
-    print('토탈소프트')
-    print(get_upperpricelimit_histories('045340'))
-    print()
+    corplist = get_krx_corplist()
+    upperlimithistories_dict = {}
+    for eachcorp in corplist:
+        upperlimithistories = get_upperpricelimit_histories(eachcorp['code'])
+        upperlimithistories_dict[eachcorp['name']] = upperlimithistories
+        upperlimithistories_str = [eachdate.strftime('%y%m%d') for eachdate in upperlimithistories]
+        print("{0:{1}}".format(f"[{eachcorp['name']}]", 20)
+              + "\t" + "{0:{1}}".format(f"[{len(upperlimithistories_str)}]", 4)
+              + f" [{' '.join(upperlimithistories_str)}]")
 
 
 if __name__ == '__main__':
