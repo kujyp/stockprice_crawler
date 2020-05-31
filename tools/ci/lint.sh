@@ -40,5 +40,5 @@ fi
 cd_into_script_path
 cd ../..
 
-flake8 --exclude='venv*,migrations' --max-line-length=127 --show-source --statistics
+flake8 --exclude='venv*,migrations,data' --max-line-length=127 --show-source --statistics
 )

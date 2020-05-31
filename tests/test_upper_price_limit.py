@@ -1,7 +1,7 @@
 from datetime import date
 
 from crawler.upper_price_limit import get_upperpricelimit_histories, get_upper_price_limit, get_rounded_down, get_tick_size
-from crawler.utils.consts import CORPCODE_BLOSSOM_MEDIA_COSMETICS, CORPCODE_KCS
+from crawler.utils.consts import CORPCODE_BLOSSOM_MEDIA_COSMETICS, CORPCODE_KCS, CORPCODE_KNN
 
 
 def test_get_upperpricelimit_histories1():
@@ -13,6 +13,11 @@ def test_get_upperpricelimit_histories1():
 def test_get_upperpricelimit_histories2():
     actual = get_upperpricelimit_histories(CORPCODE_KCS)
     assert date(2020, 5, 19) in actual
+
+
+def test_get_upperpricelimit_histories3():
+    actual = get_upperpricelimit_histories(CORPCODE_KNN)
+    assert date(2020, 5, 29) in actual
 
 
 def test_get_rounded_down():
