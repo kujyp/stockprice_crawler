@@ -4,7 +4,11 @@ from crawler.upper_price_limit import get_upperpricelimit_histories, get_upper_p
 from crawler.utils.consts import CORPCODE_BLOSSOM_MEDIA_COSMETICS, CORPCODE_KCS, CORPCODE_KNN
 
 
-def test_get_upperpricelimit_histories1():
+def test_get_upperpricelimit_histories1(mocker):
+    mocker.patch(
+        "crawler.stock.SEARCH_DATE_LIMIT",
+        date(2019, 4, 1),
+    )
     actual = get_upperpricelimit_histories(CORPCODE_BLOSSOM_MEDIA_COSMETICS)
     assert date(2020, 5, 22) in actual
     assert date(2020, 5, 20) in actual

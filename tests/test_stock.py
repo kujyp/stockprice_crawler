@@ -16,26 +16,44 @@ def test_get_latest_date():
     assert date.today() - timedelta(days=5) <= get_latest_date() <= date.today() + timedelta(days=5)
 
 
-def test_get_stock_prices1():
+def test_get_stock_prices1(mocker):
+    mocker.patch(
+        "crawler.stock.SEARCH_DATE_LIMIT",
+        date(2019, 1, 1),
+    )
     actual = get_stock_prices(CORPCODE_SAMSUNG_ELECTRONICS)
     assert actual[date(2020, 5, 29)] == 50700
     assert date(2005, 1, 10) not in actual
     assert date(1996, 6, 25) not in actual
 
 
-def test_get_stock_prices2():
+def test_get_stock_prices2(mocker):
+    mocker.patch(
+        "crawler.stock.SEARCH_DATE_LIMIT",
+        date(2019, 1, 1),
+    )
     actual = get_stock_prices(CORPCODE_Y_ENTEC)
     assert actual[date(2019, 3, 22)] == 7880
     assert actual[date(2019, 3, 21)] == 6880
 
 
-def test_get_stock_prices3():
+def test_get_stock_prices3(mocker):
+    mocker.patch(
+        "crawler.stock.SEARCH_DATE_LIMIT",
+        date(2019, 1, 1),
+    )
+
     actual = get_stock_prices(CORPCODE_Y_ENTEC)
     assert actual[date(2019, 3, 22)] == 7880
     assert actual[date(2019, 3, 21)] == 6880
 
 
-def test_get_stock_prices4():
+def test_get_stock_prices4(mocker):
+    mocker.patch(
+        "crawler.stock.SEARCH_DATE_LIMIT",
+        date(2019, 1, 1),
+    )
+
     actual = get_stock_prices(CORPCODE_KNN)
     assert actual[date(2020, 5, 29)] == 1660
     assert actual[date(2020, 5, 28)] == 1280
