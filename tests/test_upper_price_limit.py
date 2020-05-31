@@ -1,6 +1,7 @@
 from datetime import date
 
-from crawler.upper_price_limit import get_upperpricelimit_histories, get_upper_price_limit, get_rounded_down, get_tick_size
+from crawler.upper_price_limit import get_upperpricelimit_histories, get_upper_price_limit, get_rounded_down, get_tick_size, \
+    get_upperpricelimit_stocks
 from crawler.utils.consts import CORPCODE_BLOSSOM_MEDIA_COSMETICS, CORPCODE_KCS, CORPCODE_KNN
 
 
@@ -22,6 +23,30 @@ def test_get_upperpricelimit_histories2():
 def test_get_upperpricelimit_histories3():
     actual = get_upperpricelimit_histories(CORPCODE_KNN)
     assert date(2020, 5, 29) in actual
+
+
+def test_get_upperpricelimit_stocks1():
+    actual = get_upperpricelimit_stocks(date(2020, 5, 29))
+    assert {'name': 'KNN', 'code': '058400'} in actual
+    assert {'name': '고려산업', 'code': '002140'} in actual
+    assert {'name': '에이루트', 'code': '096690'} not in actual
+
+
+def test_get_upperpricelimit_stocks2():
+    actual = get_upperpricelimit_stocks(date(2020, 5, 28))
+    assert {'name': '피앤씨테크', 'code': '237750'} in actual
+    assert {'name': '일양약품', 'code': '007570'} in actual
+    assert {'name': '일양약품우', 'code': '007575'} in actual
+
+
+def test_get_upperpricelimit_stocks3():
+    actual = get_upperpricelimit_stocks(date(2020, 5, 27))
+    assert {'name': '티비에이치글로벌', 'code': '084870'} in actual
+    assert {'name': '지니뮤직', 'code': '043610'} in actual
+    assert {'name': '유니슨', 'code': '018000'} in actual
+    assert {'name': '라파스', 'code': '214260'} in actual
+    assert {'name': '티플랙스', 'code': '081150'} in actual
+    assert {'name': '인포마크', 'code': '175140'} in actual
 
 
 def test_get_rounded_down():

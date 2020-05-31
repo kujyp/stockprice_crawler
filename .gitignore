@@ -4,5 +4,3 @@ data
 test-reports
 __pycache__
 .env
-main3.py
-main2.py

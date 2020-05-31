@@ -96,6 +96,16 @@ def internal_get_stock_price(corpcode: str, target_date: date) -> Optional[int]:
     return None
 
 
+def get_prevday_stock_price(corpcode: str, target_date: date) -> Optional[int]:
+    curr_date = target_date - timedelta(days=1)
+    curr_price = None
+    while True:
+        curr_price = get_stock_price(corpcode, curr_date)
+        if curr_price is not None:
+            break
+    return curr_price
+
+
 def get_stock_price(corpcode: str, target_date: date) -> Optional[int]:
     assert isinstance(corpcode, str)
     assert isinstance(target_date, date)

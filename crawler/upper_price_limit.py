@@ -1,7 +1,8 @@
 from datetime import date
-from typing import List
+from typing import List, Dict
 
-from crawler.stock import get_stock_prices
+from crawler.corp import get_krx_corplist
+from crawler.stock import get_stock_prices, get_stock_price, get_prevday_stock_price
 
 
 def get_tick_size(price: int, is_kosdaq: bool) -> int:
@@ -45,8 +46,30 @@ def get_upper_price_limit(prevday_price: int, is_kosdaq: bool) -> int:
 def is_upper_price_limit_diffences(nextday_price: int, today_price: int) -> bool:
     assert isinstance(nextday_price, int)
     assert isinstance(today_price, int)
-    upper_price_limit = min(get_upper_price_limit(today_price, True), get_upper_price_limit(today_price, False))
-    return upper_price_limit <= nextday_price
+    if nextday_price == get_upper_price_limit(today_price, True):
+        return True
+    if nextday_price == get_upper_price_limit(today_price, False):
+        return True
+    return False
+
+
+def get_upperpricelimit_stocks(target_date: date) -> List[Dict]:
+    assert isinstance(target_date, date)
+    ret = []
+    corplist = get_krx_corplist()
+    for eachcorp in corplist:
+        if is_upperpricelimit(eachcorp['code'], target_date):
+            ret.append(eachcorp)
+    return ret
+
+
+def is_upperpricelimit(corpcode: str, target_date: date) -> bool:
+    assert isinstance(corpcode, str)
+    assert isinstance(target_date, date)
+
+    price = get_stock_price(corpcode, target_date)
+    prevday_price = get_prevday_stock_price(corpcode, target_date)
+    return is_upper_price_limit_diffences(price, prevday_price)
 
 
 def get_upperpricelimit_histories(corpcode: str) -> List[date]:

@@ -3,9 +3,15 @@ from typing import List, Dict
 import pandas as pd
 
 
+def get_prefered_corplist() -> List[Dict[str, str]]:
+    return [
+        {'name': '삼성전자우', 'code': '005935'},
+        {'name': '일양약품우', 'code': '007575'},
+    ]
+
+
 def get_krx_corplist() -> List[Dict[str, str]]:
-    ret = []
-    ret.append({'name': '삼성전자우', 'code': '005935'})
+    ret = get_prefered_corplist()
 
     code_df = pd.read_html(
         'http://kind.krx.co.kr/corpgeneral/corpList.do?method=download&searchType=13',
