@@ -99,10 +99,12 @@ def internal_get_stock_price(corpcode: str, target_date: date) -> Optional[int]:
 def get_prevday_stock_price(corpcode: str, target_date: date) -> Optional[int]:
     curr_date = target_date - timedelta(days=1)
     curr_price = None
-    while True:
+    oldest_date = get_oldest_date(corpcode)
+    while oldest_date <= curr_date:
         curr_price = get_stock_price(corpcode, curr_date)
         if curr_price is not None:
             break
+        curr_date -= timedelta(days=1)
     return curr_price
 
 
