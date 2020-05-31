@@ -41,5 +41,5 @@ fi
 cd_into_script_path
 cd ../..
 
-pytest -vs --junitxml test-reports/pytest_junit.xml
+pytest -vs --junitxml test-reports/pytest_junit.xml tests
 )
