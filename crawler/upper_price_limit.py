@@ -1,8 +1,8 @@
 from datetime import date
-from typing import List, Dict
+from typing import List
 
-from crawler.corp import get_krx_corplist
-from crawler.stock import get_stock_prices, get_stock_price, get_prevday_stock_price
+from app.models.corp import CorpSimple
+from crawler.stock import get_stockprice, get_prevday_stock_price, get_stockprices
 
 
 def get_tick_size(price: int, is_kosdaq: bool) -> int:
@@ -53,12 +53,11 @@ def is_upper_price_limit_diffences(nextday_price: int, today_price: int) -> bool
     return False
 
 
-def get_upperpricelimit_stocks(target_date: date) -> List[Dict]:
+def get_upperpricelimit_stocks(corplist: List[CorpSimple], target_date: date) -> List[CorpSimple]:
     assert isinstance(target_date, date)
     ret = []
-    corplist = get_krx_corplist()
     for eachcorp in corplist:
-        if is_upperpricelimit(eachcorp['code'], target_date):
+        if is_upperpricelimit(eachcorp.corpcode, target_date):
             ret.append(eachcorp)
     return ret
 
@@ -67,32 +66,34 @@ def is_upperpricelimit(corpcode: str, target_date: date) -> bool:
     assert isinstance(corpcode, str)
     assert isinstance(target_date, date)
 
-    price = get_stock_price(corpcode, target_date)
+    price = get_stockprice(corpcode, target_date)
     prevday_price = get_prevday_stock_price(corpcode, target_date)
     if price is None or prevday_price is None:
         return False
     return is_upper_price_limit_diffences(price, prevday_price)
 
 
-def get_upperpricelimit_histories(corpcode: str) -> List[date]:
+def get_upperpricelimit_histories(corpcode: str, search_date_limit: date) -> List[date]:
     assert isinstance(corpcode, str)
+    assert isinstance(search_date_limit, date)
 
     ret = []
 
-    prices = get_stock_prices(corpcode)
+    prices = get_stockprices(corpcode, search_date_limit)
 
     nextday_date = None
     nextday_price = None
-    for key_date, val_price in prices.items():
+    for key_date, val in prices.items():
+        price = val.price
         if nextday_date is None or nextday_price is None:
             nextday_date = key_date
-            nextday_price = val_price
+            nextday_price = price
             continue
-        if val_price is None:
+        if val.is_holiday:
             continue
-        if is_upper_price_limit_diffences(nextday_price, val_price):
+        if is_upper_price_limit_diffences(nextday_price, price):
             ret.append(nextday_date)
         nextday_date = key_date
-        nextday_price = val_price
+        nextday_price = price
 
     return ret

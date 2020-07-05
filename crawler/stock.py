@@ -1,13 +1,14 @@
 import json
 import os
 from datetime import date, datetime, timedelta
-from typing import Dict, Optional
+from typing import Dict, Optional, Any
 
 import pandas as pd
 
+from app.models.corp import get_corp_or_none
+from app.models.stockprice import Stockprice, StockpriceSimple
 from crawler.utils.configs import SEARCH_DATE_LIMIT
 from crawler.utils.consts import CORPCODE_SAMSUNG_ELECTRONICS
-from crawler.utils.errors import FutureDateError
 from crawler.utils.files import mkdir_if_not_exists
 from crawler.utils.paths import get_stockprice_path, get_oldest_path
 
@@ -17,20 +18,69 @@ cache = {
 }
 
 
-def get_stock_prices(corpcode: str) -> Dict[date, int]:
+def internal_get_stock_price(
+        corpcode: str,
+        target_date: date,
+        dynamic_price_tables: Dict[date, Any],
+) -> Optional[int]:
+    page = 1
+    terminate = False
+    previous_date: Optional[date] = None
+
+    if target_date in dynamic_price_tables:
+        return dynamic_price_tables[target_date]
+
+    while True:
+        if terminate:
+            break
+        url = "https://finance.naver.com/item/sise_day.nhn?code={}&page={}".format(corpcode, page)
+        for idx, each in pd.read_html(url)[0].dropna().iterrows():
+            each_date = datetime.strptime(each.날짜, "%Y.%m.%d").date()
+            if previous_date is not None and (previous_date - each_date) > timedelta(days=1):
+                curr_holiday = previous_date - timedelta(days=1)
+                while True:
+                    if curr_holiday <= each_date:
+                        break
+                    dynamic_price_tables[curr_holiday] = None
+                    curr_holiday -= timedelta(days=1)
+            price = int(each.종가)
+            dynamic_price_tables[each_date] = price
+            if each_date == target_date:
+                return price
+            if each_date < target_date:
+                terminate = True
+                break
+            previous_date = each_date
+        page += 1
+    return None
+
+
+def get_stockprices(corpcode: str, from_date: date, to_date: Optional[date] = None) -> Dict[date, StockpriceSimple]:
     assert isinstance(corpcode, str)
+    assert isinstance(from_date, date)
+    assert (to_date is None) or isinstance(to_date, date)
+
+    dynamic_price_tables = {}
+
+    oldest_date = max(get_oldest_date(corpcode), from_date)
+    latest_date = min(get_latest_date(), to_date) if to_date is not None else get_latest_date()
+    curr_date = oldest_date - timedelta(days=1)
+    while True:
+        curr_date += timedelta(days=1)
+        if latest_date < curr_date:
+            break
+
+        if curr_date in dynamic_price_tables:
+            continue
+        dynamic_price_tables[curr_date] = internal_get_stock_price(corpcode, curr_date, dynamic_price_tables)
 
     ret = {}
-    oldest_date = get_oldest_date(corpcode)
-    oldest_date = max(oldest_date, SEARCH_DATE_LIMIT)
-    get_stock_price(corpcode, oldest_date)
-
-    curr_date = get_latest_date()
-    while True:
-        ret[curr_date] = load_price_data(corpcode, curr_date)
-        curr_date -= timedelta(days=1)
-        if oldest_date > curr_date:
-            break
+    for eachdate, eachprice in dynamic_price_tables.items():
+        ret[eachdate] = StockpriceSimple(
+            target_date=eachdate,
+            corpcode=corpcode,
+            price=eachprice,
+        )
     return ret
 
 
@@ -56,12 +106,15 @@ def get_oldest_date(corpcode) -> date:
     return datetime.strptime(date_as_str, "%Y.%m.%d").date()
 
 
-def load_price_data(corpcode: str, target_date: date) -> int:
+def load_price_data(corpcode: str, target_date: date) -> Optional[int]:
     assert isinstance(corpcode, str)
     assert isinstance(target_date, date)
 
     stockprice_path = get_stockprice_path(corpcode, target_date)
-    return json.load(open(stockprice_path, 'r'))
+    try:
+        json.load(open(stockprice_path, 'r'))
+    except FileNotFoundError:
+        return None
 
 
 def save_price_data(corpcode: str, target_date: date, price: Optional[int]) -> None:
@@ -69,50 +122,10 @@ def save_price_data(corpcode: str, target_date: date, price: Optional[int]) -> N
     assert isinstance(target_date, date)
     assert isinstance(price, int) or price is None
 
-    stockprice_path = get_stockprice_path(corpcode, target_date)
-    mkdir_if_not_exists(os.path.dirname(stockprice_path))
-    json.dump(price, open(stockprice_path, 'w'))
-
-
-def internal_get_stock_price(corpcode: str, target_date: date) -> Optional[int]:
-    if target_date > get_latest_date():
-        raise FutureDateError(f'latest date: [{get_latest_date()}]. requested: [{target_date}]')
-
-    ret = {}
-    page = 1
-    terminate = False
-    previous_date: Optional[date] = None
-    oldest_date = get_oldest_date(corpcode)
-    if oldest_date > target_date:
-        return None
-
-    while True:
-        if terminate:
-            break
-        url = "https://finance.naver.com/item/sise_day.nhn?code={}&page={}".format(corpcode, page)
-        for idx, each in pd.read_html(url)[0].dropna().iterrows():
-            each_date = datetime.strptime(each.날짜, "%Y.%m.%d").date()
-            price = None
-            if previous_date is not None and (previous_date - each_date) > timedelta(days=1):
-                curr_holiday = previous_date - timedelta(days=1)
-                while True:
-                    if curr_holiday <= each_date:
-                        break
-                    save_price_data(corpcode, curr_holiday, None)
-                    curr_holiday -= timedelta(days=1)
-            if not os.path.exists(get_stockprice_path(corpcode, each_date)):
-                price = int(each.종가)
-                save_price_data(corpcode, each_date, price)
-            if price is None:
-                price = load_price_data(corpcode, each_date)
-            if each_date == target_date:
-                return price
-            if each_date < target_date or each_date in ret:
-                terminate = True
-                break
-            previous_date = each_date
-        page += 1
-    return None
+    if price is None:
+        Stockprice(target_date=target_date, stock=get_corp_or_none(corpcode), is_holiday=True).save()
+    else:
+        Stockprice(target_date=target_date, stock=get_corp_or_none(corpcode), price=price).save()
 
 
 def get_prevday_stock_price(corpcode: str, target_date: date) -> Optional[int]:
@@ -121,20 +134,12 @@ def get_prevday_stock_price(corpcode: str, target_date: date) -> Optional[int]:
     oldest_date = get_oldest_date(corpcode)
     oldest_date = max(oldest_date, SEARCH_DATE_LIMIT)
     while oldest_date <= curr_date:
-        curr_price = get_stock_price(corpcode, curr_date)
+        curr_price = get_stockprice(corpcode, curr_date)
         if curr_price is not None:
             break
         curr_date -= timedelta(days=1)
     return curr_price
 
 
-def get_stock_price(corpcode: str, target_date: date) -> Optional[int]:
-    assert isinstance(corpcode, str)
-    assert isinstance(target_date, date)
-
-    stockprice_path = get_stockprice_path(corpcode, target_date)
-    if os.path.exists(stockprice_path):
-        return load_price_data(corpcode, target_date)
-
-    stockprice = internal_get_stock_price(corpcode, target_date)
-    return stockprice
+def get_stockprice(corpcode: str, target_date: date) -> Optional[int]:
+    return get_stockprices(corpcode, target_date, target_date)[target_date].price

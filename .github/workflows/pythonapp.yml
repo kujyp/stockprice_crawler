@@ -6,6 +6,16 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    services:
+      mysql:
+        image: mysql:5.7.28
+        ports:
+          - 3306
+        env:
+          MYSQL_DATABASE: test
+          MYSQL_ROOT_PASSWORD: password
+        options: --health-cmd="mysqladmin ping" --health-interval=5s --health-timeout=2s --health-retries=3
+
     steps:
     - uses: actions/checkout@v1
     - name: Set up Python 3.7
@@ -22,6 +32,25 @@ jobs:
       run: |
         pip install flake8==3.6.0
         tools/ci/lint.sh
+    - name: Verify DB connection
+      env:
+        PORT: ${{ job.services.mysql.ports[3306] }}
+      run: |
+        while ! mysqladmin ping -h"127.0.0.1" -P"$PORT" --silent; do
+          sleep 1
+        done
+    - name: Check db migration
+      env:
+        PORT: ${{ job.services.mysql.ports[3306] }}
+      run: |
+        export SQLALCHEMY_DATABASE_URI="mysql://root:password@127.0.0.1:$PORT/test?charset=utf8"
+        export FLASK_APP=wsgi.py
+        flask db upgrade
+        flask db migrate
+        if [[ ! -z "$(git status --porcelain)" ]]; then
+          echo "Some files changed. Did you run 'tools/mysql_db_migrate.sh'?"
+          exit 1
+        fi
     - name: Test with pytest
       run: |
         pip install -r requirements-test.txt

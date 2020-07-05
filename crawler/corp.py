@@ -13,8 +13,9 @@ def get_prefered_corplist() -> List[Dict[str, str]]:
 def get_krx_corplist() -> List[Dict[str, str]]:
     ret = get_prefered_corplist()
 
+    url = 'http://kind.krx.co.kr/corpgeneral/corpList.do?method=download&searchType=13'
     code_df = pd.read_html(
-        'http://kind.krx.co.kr/corpgeneral/corpList.do?method=download&searchType=13',
+        url,
         header=0)[0]
     code_df.종목코드 = code_df.종목코드.map('{:06d}'.format)
     code_df = code_df[['회사명', '종목코드']]
