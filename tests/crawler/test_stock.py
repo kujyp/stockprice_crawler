@@ -22,7 +22,8 @@ def test_get_stock_prices1():
 
 
 def test_get_stock_prices2():
-    actual = get_stockprices(CORPCODE_Y_ENTEC, date(2019, 3, 21))
+    actual = get_stockprices(CORPCODE_Y_ENTEC, date(2019, 3, 21), date(2019, 3, 22))
+    assert len(actual) == 2
     assert actual[date(2019, 3, 22)] == StockpriceSimple(CORPCODE_Y_ENTEC, date(2019, 3, 22), 7880)
     assert actual[date(2019, 3, 21)] == StockpriceSimple(CORPCODE_Y_ENTEC, date(2019, 3, 21), 6880)
 
