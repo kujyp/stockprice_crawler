@@ -76,11 +76,12 @@ def get_stockprices(corpcode: str, from_date: date, to_date: Optional[date] = No
 
     ret = {}
     for eachdate, eachprice in dynamic_price_tables.items():
-        ret[eachdate] = StockpriceSimple(
-            target_date=eachdate,
-            corpcode=corpcode,
-            price=eachprice,
-        )
+        if oldest_date <= eachdate <= latest_date:
+            ret[eachdate] = StockpriceSimple(
+                target_date=eachdate,
+                corpcode=corpcode,
+                price=eachprice,
+            )
     return ret
 
 
