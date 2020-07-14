@@ -29,6 +29,11 @@ jobs:
         mysql database: 'test'
         mysql user: 'root'
         mysql password: 'password'
+    - name: Verify DB connection
+      run: |
+        while ! mysqladmin ping -h"127.0.0.1" -P"3306" --silent; do
+          sleep 1
+        done
     - name: Check db migration
       run: |
         export SQLALCHEMY_DATABASE_URI="mysql://root:password@127.0.0.1:3306/test?charset=utf8"
