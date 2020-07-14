@@ -14,7 +14,7 @@ jobs:
         env:
           MYSQL_DATABASE: test
           MYSQL_ROOT_PASSWORD: password
-        options: --health-cmd="mysqladmin ping" --health-interval=5s --health-timeout=2s --health-retries=3
+        options: --health-cmd="mysqladmin ping" --health-interval=5s --health-timeout=2s --health-retries=3 --character-set-server=utf8mb4
 
     steps:
     - uses: actions/checkout@v1
@@ -54,4 +54,5 @@ jobs:
     - name: Test with pytest
       run: |
         pip install -r requirements-test.txt
+        export PYTEST_SQLALCHEMY_DATABASE_URI="mysql://root:password@127.0.0.1:$PORT/test?charset=utf8"
         tools/ci/pytest.sh

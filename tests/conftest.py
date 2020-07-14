@@ -1,3 +1,5 @@
+import os
+
 import pytest
 
 from app import create_app
@@ -6,8 +8,11 @@ from app.models import db
 
 @pytest.fixture
 def app(tmpdir):
-    db_uri = f"sqlite:///{tmpdir.strpath}/app.db"
-    # db_uri = "mysql://root:1234@127.0.0.1:3306/test?charset=utf8"
+    if "PYTEST_SQLALCHEMY_DATABASE_URI" in os.environ:
+        db_uri = os.environ["PYTEST_SQLALCHEMY_DATABASE_URI"]
+    else:
+        db_uri = "mysql://root:1234@127.0.0.1:3306/test?charset=utf8"
+        # db_uri = f"sqlite:///{tmpdir.strpath}/app.db"
     app = create_app(
         SQLALCHEMY_DATABASE_URI=db_uri,
     )
