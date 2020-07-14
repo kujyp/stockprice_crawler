@@ -1,0 +1,11 @@
+.idea
+venv*
+.env*
+__pycache__
+*.pyc
+app.db
+test-reports
+.DS_Store
+data
+.pytest_cache
+
