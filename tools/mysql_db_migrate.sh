@@ -41,13 +41,13 @@ if [[ ! -z "$(docker ps -f name=mysql -q)" ]]; then
 fi
 
 echo "mysql initialize..."
-docker run -d --rm -p 3306:3306 --name mysql -e MYSQL_ROOT_PASSWORD=1234 -e MYSQL_DATABASE=test mysql:5.7.28
-while ! mysqladmin ping -h"127.0.0.1" -P3306 --silent; do
+docker run -d --rm -p 3307:3306 --name mysql_migrate -e MYSQL_ROOT_PASSWORD=1234 -e MYSQL_DATABASE=test mysql:5.7.28
+while ! mysqladmin ping -h"127.0.0.1" -P3307 --silent; do
   echo "mysql initialize..."
   sleep 1
 done
 
-export SQLALCHEMY_DATABASE_URI="mysql://root:1234@127.0.0.1:3306/test?charset=utf8"
+export SQLALCHEMY_DATABASE_URI="mysql://root:1234@127.0.0.1:3307/test?charset=utf8"
 export FLASK_APP=wsgi.py
 flask db upgrade
 flask db migrate
