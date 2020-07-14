@@ -27,8 +27,7 @@ jobs:
       with:
         mysql version: '5.7.28'
         mysql database: 'test'
-        mysql user: 'root'
-        mysql password: 'password'
+        mysql root password: 'password'
     - name: Verify DB connection
       run: |
         while ! mysqladmin ping -h"127.0.0.1" -P"3306" --silent; do
