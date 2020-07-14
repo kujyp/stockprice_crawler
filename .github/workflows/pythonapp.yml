@@ -52,6 +52,8 @@ jobs:
           exit 1
         fi
     - name: Test with pytest
+      env:
+        PORT: ${{ job.services.mysql.ports[3306] }}
       run: |
         pip install -r requirements-test.txt
         export PYTEST_SQLALCHEMY_DATABASE_URI="mysql://root:password@127.0.0.1:$PORT/test?charset=utf8"
