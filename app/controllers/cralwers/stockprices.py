@@ -36,7 +36,10 @@ def crawl_stockprices():
     for eachcorp in corps:
         stockprices = get_stockprices(eachcorp.corpcode, from_date, to_date)
         for each_date, each_stockprice in stockprices.items():
-            if Stockprice.query.filter_by(target_date=each_stockprice.target_date).one_or_none() is not None:
+            if Stockprice.query.filter_by(
+                    target_date=each_stockprice.target_date,
+                    corp=eachcorp,
+            ).one_or_none() is not None:
                 continue
             updateds.append(Stockprice(
                 target_date=each_stockprice.target_date,
