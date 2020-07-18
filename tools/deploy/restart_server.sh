@@ -108,6 +108,7 @@ fi
 /usr/local/bin/docker pull kujyp/stockprice_crawler:"$docker_tag"
 if [[ ! -z "$(/usr/local/bin/docker ps -f name=^stockprice_crawler$ -q)" ]]; then
   /usr/local/bin/docker stop stockprice_crawler
+  /usr/local/bin/docker rm stockprice_crawler
   sleep 2
 fi
 

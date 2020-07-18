@@ -35,9 +35,9 @@ function error_msg() {
 cd_into_script_path
 cd ..
 
-if [[ ! -z "$(docker ps -f name=mysql -q)" ]]; then
-  echo "stop mysql container..."
-  docker stop mysql
+if [[ ! -z "$(docker ps -f name=mysql_migrate -q)" ]]; then
+  echo "stop mysql_migrate container..."
+  docker stop mysql_migrate
 fi
 
 echo "mysql initialize..."
@@ -51,5 +51,5 @@ export SQLALCHEMY_DATABASE_URI="mysql://root:1234@127.0.0.1:3307/test?charset=ut
 export FLASK_APP=wsgi.py
 flask db upgrade
 flask db migrate
-docker stop mysql
+docker stop mysql_migrate
 )
