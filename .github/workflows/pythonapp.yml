@@ -48,3 +48,20 @@ jobs:
         pip install -r requirements-test.txt
         export PYTEST_SQLALCHEMY_DATABASE_URI="mysql://root:password@127.0.0.1:3306/test?charset=utf8"
         tools/ci/pytest.sh
+    - name: Publish to Registry
+      if: github.ref == 'refs/heads/develop'
+      uses: elgohr/Publish-Docker-Github-Action@master
+      with:
+        name: kujyp/stockprice_crawler
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+        tags: "develop-latest, develop-${{ github.sha }}"
+    - name: Deploy
+      if: github.ref == 'refs/heads/develop'
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.DEPLOY_HOST_SSH_CREDENTIALS }}" | base64 --decode > ~/.ssh/id_rsa
+        chmod 0400 ~/.ssh/id_rsa
+        ssh-keyscan -t rsa -p ${{ secrets.DEPLOY_HOST_SSHPORT }} "${{ secrets.DEPLOY_HOST }}" >> ~/.ssh/known_hosts
+        scp -P${{ secrets.DEPLOY_HOST_SSHPORT }} tools/deploy/restart_server.sh ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:.
+        ssh -p${{ secrets.DEPLOY_HOST_SSHPORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} ./restart_server.sh --port 8000 --docker-tag develop-${{ github.sha }} --mysql-account ${{ secrets.DEPLOY_MYSQL_ACCOUNT }} --mysql-password ${{ secrets.DEPLOY_MYSQL_PASSWORD }} --mysql-host ${{ secrets.DEPLOY_MYSQL_HOST }} --mysql-port ${{ secrets.DEPLOY_MYSQL_PORT }} --mysql-database ${{ secrets.DEPLOY_MYSQL_DATABASE }}
