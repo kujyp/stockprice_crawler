@@ -113,4 +113,4 @@ if [[ ! -z "$(/usr/local/bin/docker ps -f name=^stockprice_crawler$ -q)" ]]; the
 fi
 
 
-/usr/local/bin/docker run -d --rm -p "$port":80 -e SQLALCHEMY_DATABASE_URI="mysql://${mysql_account}:${mysql_password}@${mysql_host}:${mysql_port}/${mysql_database}?charset=utf8" --name stockprice_crawler kujyp/stockprice_crawler:"$docker_tag"
+/usr/local/bin/docker run -d --restart=always -p "$port":80 -e SQLALCHEMY_DATABASE_URI="mysql://${mysql_account}:${mysql_password}@${mysql_host}:${mysql_port}/${mysql_database}?charset=utf8" --name stockprice_crawler kujyp/stockprice_crawler:"$docker_tag"
