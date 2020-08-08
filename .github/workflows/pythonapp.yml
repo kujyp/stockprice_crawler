@@ -65,3 +65,6 @@ jobs:
         ssh-keyscan -t rsa -p ${{ secrets.DEPLOY_HOST_SSHPORT }} "${{ secrets.DEPLOY_HOST }}" >> ~/.ssh/known_hosts
         scp -P${{ secrets.DEPLOY_HOST_SSHPORT }} tools/deploy/restart_server.sh ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:.
         ssh -p${{ secrets.DEPLOY_HOST_SSHPORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} ./restart_server.sh --port 8000 --docker-tag develop-${{ github.sha }} --mysql-account ${{ secrets.DEPLOY_MYSQL_ACCOUNT }} --mysql-password ${{ secrets.DEPLOY_MYSQL_PASSWORD }} --mysql-host ${{ secrets.DEPLOY_MYSQL_HOST }} --mysql-port ${{ secrets.DEPLOY_MYSQL_PORT }} --mysql-database ${{ secrets.DEPLOY_MYSQL_DATABASE }}
+        scp -P${{ secrets.DEPLOY_HOST_SSHPORT }} tools/crontabs/daily.sh ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/var/services/homes/kujyp/crontab_scripts/.
+        scp -P${{ secrets.DEPLOY_HOST_SSHPORT }} tools/crontabs/hourly.sh ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/var/services/homes/kujyp/crontab_scripts/.
+        scp -P${{ secrets.DEPLOY_HOST_SSHPORT }} tools/crontabs/minutely.sh ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/var/services/homes/kujyp/crontab_scripts/.
