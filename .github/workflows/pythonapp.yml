@@ -50,7 +50,7 @@ jobs:
         tools/ci/pytest.sh
     - name: Publish to Registry
       if: github.ref == 'refs/heads/develop'
-      uses: elgohr/Publish-Docker-Github-Action@master
+      uses: elgohr/Publish-Docker-Github-Action@v5
       with:
         name: kujyp/stockprice_crawler
         username: ${{ secrets.DOCKER_USERNAME }}
